@@ -34,6 +34,24 @@
     filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.25));
   }
 
+  .tilt-card {
+    transform: translate3d(0, var(--parallax-y, 0), 0) perspective(900px)
+      rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transform-style: preserve-3d;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+    will-change: transform;
+  }
+
+  .tilt-card:hover {
+    box-shadow: 0 30px 70px rgba(15, 23, 42, 0.18);
+  }
+
+  .parallax-item {
+    transform: translate3d(0, var(--parallax-y, 0), 0);
+    transition: transform 220ms ease;
+    will-change: transform;
+  }
+
   .reveal {
     opacity: 0;
     transform: translateY(18px) scale(0.98);
@@ -81,6 +99,12 @@
 
   .timeline-glow {
     animation: none;
+  }
+
+  .tilt-card,
+  .parallax-item {
+    transform: none;
+    transition: none;
   }
 }
 

@@ -1,11 +1,51 @@
+import { useEffect, useRef } from 'react'
 import type { Project } from '../types'
 import { formatCurrency } from '../utils'
 
 export function ProjectsSection({ projects }: { projects: Project[] }) {
   const visibleProjects = projects
+  const sectionRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+
+    const tiltElements = section.querySelectorAll<HTMLElement>('[data-tilt]')
+    const tiltHandlers: Array<{
+      element: HTMLElement
+      onMove: (event: MouseEvent) => void
+      onLeave: () => void
+    }> = []
+
+    tiltElements.forEach((element) => {
+      const onMove = (event: MouseEvent) => {
+        const rect = element.getBoundingClientRect()
+        const x = (event.clientX - rect.left) / rect.width - 0.5
+        const y = (event.clientY - rect.top) / rect.height - 0.5
+        element.style.setProperty('--tilt-x', `${(-y * 6).toFixed(2)}deg`)
+        element.style.setProperty('--tilt-y', `${(x * 6).toFixed(2)}deg`)
+      }
+
+      const onLeave = () => {
+        element.style.setProperty('--tilt-x', '0deg')
+        element.style.setProperty('--tilt-y', '0deg')
+      }
+
+      element.addEventListener('mousemove', onMove)
+      element.addEventListener('mouseleave', onLeave)
+      tiltHandlers.push({ element, onMove, onLeave })
+    })
+
+    return () => {
+      tiltHandlers.forEach(({ element, onMove, onLeave }) => {
+        element.removeEventListener('mousemove', onMove)
+        element.removeEventListener('mouseleave', onLeave)
+      })
+    }
+  }, [])
 
   return (
-    <section className="glass-panel p-6">
+    <section ref={sectionRef} className="glass-panel p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Projects</p>
@@ -24,7 +64,7 @@ export function ProjectsSection({ projects }: { projects: Project[] }) {
 
 function ProjectCard({ project }: { project: Project }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5">
+    <article className="rounded-2xl border border-slate-200 bg-white p-5 tilt-card" data-tilt>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-400">Design stage</p>

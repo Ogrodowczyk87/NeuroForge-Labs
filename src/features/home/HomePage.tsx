@@ -70,7 +70,64 @@ export function HomePage() {
     )
 
     elements.forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
+    const tiltElements = document.querySelectorAll<HTMLElement>('[data-tilt]')
+    const tiltHandlers: Array<{
+      element: HTMLElement
+      onMove: (event: MouseEvent) => void
+      onLeave: () => void
+    }> = []
+
+    tiltElements.forEach((element) => {
+      const onMove = (event: MouseEvent) => {
+        const rect = element.getBoundingClientRect()
+        const x = (event.clientX - rect.left) / rect.width - 0.5
+        const y = (event.clientY - rect.top) / rect.height - 0.5
+        element.style.setProperty('--tilt-x', `${(-y * 6).toFixed(2)}deg`)
+        element.style.setProperty('--tilt-y', `${(x * 6).toFixed(2)}deg`)
+      }
+
+      const onLeave = () => {
+        element.style.setProperty('--tilt-x', '0deg')
+        element.style.setProperty('--tilt-y', '0deg')
+      }
+
+      element.addEventListener('mousemove', onMove)
+      element.addEventListener('mouseleave', onLeave)
+      tiltHandlers.push({ element, onMove, onLeave })
+    })
+
+    const parallaxElements = document.querySelectorAll<HTMLElement>('[data-parallax]')
+    let rafId = 0
+    const onScroll = () => {
+      if (rafId) return
+      rafId = window.requestAnimationFrame(() => {
+        const offset = window.scrollY
+        parallaxElements.forEach((element) => {
+          const speed = Number(element.dataset.parallax) || 0.12
+          element.style.setProperty('--parallax-y', `${offset * speed}px`)
+        })
+        rafId = 0
+      })
+    }
+
+    if (parallaxElements.length) {
+      onScroll()
+      window.addEventListener('scroll', onScroll, { passive: true })
+    }
+
+    return () => {
+      observer.disconnect()
+      tiltHandlers.forEach(({ element, onMove, onLeave }) => {
+        element.removeEventListener('mousemove', onMove)
+        element.removeEventListener('mouseleave', onLeave)
+      })
+      if (parallaxElements.length) {
+        window.removeEventListener('scroll', onScroll)
+      }
+      if (rafId) {
+        window.cancelAnimationFrame(rafId)
+      }
+    }
   }, [])
 
   function SparkLine({ points }: { points: number[] }) {
@@ -134,7 +191,7 @@ export function HomePage() {
             ))}
           </dl>
         </div>
-        <div className="glass-panel relative overflow-hidden p-8">
+        <div className="glass-panel relative overflow-hidden p-8 parallax-item" data-parallax="0.08">
           <div className="absolute inset-0 bg-mesh opacity-60" aria-hidden />
           <div className="relative space-y-6">
             <p className="text-sm uppercase tracking-[0.5em] text-slate-600">Chip map</p>
@@ -174,7 +231,8 @@ export function HomePage() {
         {statusCards.map((card) => (
           <article
             key={card.label}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.1)]"
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.1)] tilt-card"
+            data-tilt
           >
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{card.label}</p>
             <div className="mt-3 flex items-end justify-between gap-3">
@@ -213,7 +271,8 @@ export function HomePage() {
           {stageCards.map((stage) => (
             <article
               key={stage.id}
-              className="relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
+              className="relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_rgba(0,0,0,0.35)] tilt-card"
+              data-tilt
             >
               <div className={`pointer-events-none absolute inset-0 opacity-70 blur-3xl bg-gradient-to-br ${stage.accent}`} aria-hidden />
               <div className="relative flex flex-col gap-4">
