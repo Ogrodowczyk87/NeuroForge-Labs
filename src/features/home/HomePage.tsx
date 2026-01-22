@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { stageCards } from '@/features/stages/data'
 
@@ -11,7 +12,7 @@ const roadmap = [
   {
     title: 'Concept & ISA',
     detail: 'Rapid microarchitecture sketches, test-suite setup, and power-budget analysis.',
-  },
+  },                                    
   {
     title: 'RTL model',
     detail: 'Auto-generated IP blocks, timing reports, and exports to P&R flows.',
@@ -27,6 +28,26 @@ const roadmap = [
 ]
 
 export function HomePage() {
+  useEffect(() => {
+    const elements = document.querySelectorAll<HTMLElement>('[data-reveal]')
+    if (!elements.length) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -10% 0px' },
+    )
+
+    elements.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div className="space-y-20">
       <section className="grid items-center gap-10 lg:grid-cols-[1.2fr,0.8fr]">
@@ -75,12 +96,23 @@ export function HomePage() {
             <p className="text-slate-600">
               Visualize every stage of the process: ownership, risks, and checklist completion.
             </p>
-            <div className="grid gap-4 text-sm">
+            <div className="grid gap-5 text-sm">
               {roadmap.map((step, index) => (
-                <div key={step.title} className="flex items-start gap-4">
+                <div
+                  key={step.title}
+                  className="reveal relative flex items-start gap-4"
+                  data-reveal
+                  style={{ ['--reveal-delay' as string]: `${index * 120}ms` }}
+                >
+                  <span
+                    className="timeline-line"
+                    aria-hidden
+                    data-last={index === roadmap.length - 1}
+                  />
                   <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white font-mono text-sm">
                     {index + 1}
                   </div>
+                  <div className="timeline-glow" aria-hidden />
                   <div>
                     <p className="font-semibold text-slate-900">{step.title}</p>
                     <p className="text-slate-400">{step.detail}</p>
