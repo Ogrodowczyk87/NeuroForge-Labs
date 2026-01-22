@@ -27,6 +27,31 @@ const roadmap = [
   },
 ]
 
+const statusCards = [
+  {
+    label: 'Yield rate',
+    value: '98.2%',
+    delta: '+1.6%',
+    trendUp: true,
+    points: [12, 14, 13, 16, 18, 17, 19, 21],
+  },
+  {
+    label: 'Tapeout risk',
+    value: 'Low',
+    delta: '-0.4%',
+    trendUp: false,
+    points: [18, 16, 17, 15, 13, 12, 11, 10],
+  },
+  {
+    label: 'EDA runtime',
+    value: '2h 12m',
+    delta: '-12%',
+    trendUp: true,
+    points: [30, 28, 26, 25, 24, 22, 21, 20],
+  },
+]
+
+
 export function HomePage() {
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>('[data-reveal]')
@@ -47,6 +72,27 @@ export function HomePage() {
     elements.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
   }, [])
+
+  function SparkLine({ points }: { points: number[] }) {
+    const min = Math.min(...points)
+    const max = Math.max(...points)
+    const range = max - min || 1
+    
+
+    const d = points
+      .map((point, index) => {
+        const x = (index / (points.length - 1)) * 100
+        const y = 100 - ((point - min) / range) * 100
+        return `${index === 0 ? 'M' : 'L'} ${x} ${y}`
+      })
+      .join(' ')
+
+    return (
+      <svg className="sparkline h-8 w-24" viewBox="0 0 100 100">
+        <path d={d} fill="none" stroke="currentColor" strokeWidth="3" />
+      </svg>
+    )
+  }
 
   return (
     <div className="space-y-20">
@@ -122,6 +168,32 @@ export function HomePage() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="grid gap-6 md:grid-cols-3">
+        {statusCards.map((card) => (
+          <article
+            key={card.label}
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.1)]"
+          >
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{card.label}</p>
+            <div className="mt-3 flex items-end justify-between gap-3">
+              <div>
+                <p className="text-2xl font-semibold text-slate-900">{card.value}</p>
+                <p
+                  className={`text-xs font-mono ${
+                    card.trendUp ? 'text-emerald-600' : 'text-rose-500'
+                  }`}
+                >
+                  {card.delta} {card.trendUp ? '▲' : '▼'}
+                </p>
+              </div>
+              <div className={card.trendUp ? 'text-emerald-500' : 'text-rose-400'}>
+                <SparkLine points={card.points} />
+              </div>
+            </div>
+          </article>
+        ))}
       </section>
 
       <section className="space-y-8">
