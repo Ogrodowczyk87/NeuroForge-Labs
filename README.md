@@ -17,6 +17,7 @@ A modern React + TypeScript app with an authenticated client panel, checkout flo
 - Client dashboard: Cart, Projects, Account, Activity, Pipeline
 - Checkout: choose card (Stripe) or invoice/bank transfer
 - Responsive UI with Tailwind and glass-style panels
+- Industry signals: RSS-powered news briefs (NVIDIA + open hardware)
 - Type-safe code with TS, clean project structure
 
 ## Project Structure
@@ -28,7 +29,9 @@ A modern React + TypeScript app with an authenticated client panel, checkout flo
 - src/features/auth/ — Auth context, provider, protected route, pages
 - src/features/client/ — Client panel pages, helpers, and components
 - src/features/stages/ — Stages page and data
+- src/features/feeds/ — RSS feed UI (Industry signals)
 - src/lib/supabase.ts — Supabase client setup
+- server/rss-proxy.mjs — Node/Express RSS proxy (avoids CORS)
 
 ## Architecture Notes
 
@@ -61,6 +64,8 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 npm install
 # start dev server
 npm run dev
+# start RSS proxy (required for Industry signals in dev)
+npm run dev:server
 # build for production
 npm run build
 # preview production build
@@ -68,5 +73,15 @@ npm run preview
 # lint
 npm run lint
 ```
+
+### RSS proxy (development)
+
+The Industry signals section fetches RSS feeds via a local proxy to avoid browser CORS issues.
+
+- Start it with `npm run dev:server`
+- Proxy listens on `http://localhost:5051`
+- Vite forwards `/api/*` to the proxy (see `vite.config.ts`)
+
+Available sources are defined in `server/rss-proxy.mjs`.
 
 ![diagram](./src/assets/diagram.svg)

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { stageCards } from '@/features/stages/data'
+import { IndustrySignals } from '@/features/feeds/IndustrySignals'
 
 const stats = [
   { label: 'Weekly iterations', value: '36', detail: 'full RTL → GDS loops' },
@@ -253,6 +254,8 @@ export function HomePage() {
           </article>
         ))}
       </section>
+
+      <IndustrySignals />
 
       <section className="space-y-8">
         <div className="flex flex-wrap items-end justify-between gap-6">
