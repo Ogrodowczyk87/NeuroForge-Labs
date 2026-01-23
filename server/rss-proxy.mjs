@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import Parser from 'rss-parser'
+import { error } from 'console'
 
 const app = express()
 const parser = new Parser({
@@ -25,6 +26,7 @@ const FEEDS = {
 const cache = new Map()
 
 app.use(cors())
+
 
 app.get('/api/rss', async (req, res) => {
   const source = String(req.query.source || '').trim()
